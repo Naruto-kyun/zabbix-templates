@@ -11,6 +11,17 @@ __version__ = '1.0.4'
 class DiskStats(object):
 
     DISKSTATS = '/proc/diskstats'
+    DISKSTATS_RCS = 3
+    DISKSTATS_RM = 4
+    DISKSTATS_SR = 5
+    DISKSTATS_TSR = 6
+    DISKSTATS_WC = 7
+    DISKSTATS_WM = 8
+    DISKSTATS_SW = 9
+    DISKSTATS_TSW = 10
+    DISKSTATS_IO = 11
+    DISKSTATS_TSIO = 12
+    DISKSTATS_WTSIO = 13
 
     @classmethod
     def discovery(cls, args):
@@ -22,9 +33,11 @@ class DiskStats(object):
                     columns = line.split()
                     if len(columns) != 14 or columns[3] == columns[4] == '0':
                         continue
-                    item = {'{#DISK_MAJOR}': columns[0],
-                            '{#DISK_MINOR}': columns[1],
-                            '{#DISK_NAME}': columns[2]}
+                    item = {
+						'{#DISK_MAJOR}': columns[0],
+                        '{#DISK_MINOR}': columns[1],
+                        '{#DISK_NAME}': columns[2]
+					}
                     data.append(item)
             discovery['data'] = data
         except Exception:
@@ -32,12 +45,129 @@ class DiskStats(object):
                 raise
         return json.dumps(discovery, separators=(',', ':'))
 
+    @classmethod
+    def get_status(cls, args, position):
+        status = 'Cannot get diskstats'
+        try:
+            with open(cls.DISKSTATS, 'r') as diskstats:
+                for line in diskstats.readlines():
+                    columns = line.split()
+                    if columns[0] == args.diskstat_major and  columns[1] == args.diskstat_minor:
+                        status = columns[position]
+        except Exception:
+            if args.debug:
+                raise
+        return status
+
+    @classmethod
+    def rcs(cls, args):
+        return cls.get_status(args, cls.DISKSTATS_RCS)
+
+    @classmethod
+    def rm(cls, args):
+        return cls.get_status(args, cls.DISKSTATS_RM)
+
+    @classmethod
+    def sr(cls, args):
+        return cls.get_status(args, cls.DISKSTATS_SR)
+
+    @classmethod
+    def tsr(cls, args):
+        return cls.get_status(args, cls.DISKSTATS_TSR)
+
+    @classmethod
+    def wc(cls, args):
+        return cls.get_status(args, cls.DISKSTATS_WC)
+
+    @classmethod
+    def wm(cls, args):
+        return cls.get_status(args, cls.DISKSTATS_WM)
+
+    @classmethod
+    def sw(cls, args):
+        return cls.get_status(args, cls.DISKSTATS_SW)
+
+    @classmethod
+    def tsw(cls, args):
+        return cls.get_status(args, cls.DISKSTATS_TSW)
+
+    @classmethod
+    def io(cls, args):
+        return cls.get_status(args, cls.DISKSTATS_IO)
+
+    @classmethod
+    def tsio(cls, args):
+        return cls.get_status(args, cls.DISKSTATS_TSIO)
+
+    @classmethod
+    def wtsio(cls, args):
+        return cls.get_status(args, cls.DISKSTATS_WTSIO)
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', '--debug', action='store_true')
-    parser.set_defaults(func=DiskStats.discovery)
-    return parser.parse_args()
+
+    subparsers = parser.add_subparsers()
+
+    subparser_discovery = subparsers.add_parser('discovery')
+    subparser_discovery.set_defaults(func=DiskStats.discovery)
+
+    subparser_rcs = subparsers.add_parser('rcs')
+    subparser_rcs.add_argument('diskstat_major')
+    subparser_rcs.add_argument('diskstat_minor')
+    subparser_rcs.set_defaults(func=DiskStats.rcs)
+
+    subparser_rm = subparsers.add_parser('rm')
+    subparser_rm.add_argument('diskstat_major')
+    subparser_rm.add_argument('diskstat_minor')
+    subparser_rm.set_defaults(func=DiskStats.rm)
+
+    subparser_sr = subparsers.add_parser('sr')
+    subparser_sr.add_argument('diskstat_major')
+    subparser_sr.add_argument('diskstat_minor')
+    subparser_sr.set_defaults(func=DiskStats.sr)
+
+    subparser_tsr = subparsers.add_parser('tsr')
+    subparser_tsr.add_argument('diskstat_major')
+    subparser_tsr.add_argument('diskstat_minor')
+    subparser_tsr.set_defaults(func=DiskStats.tsr)
+
+    subparser_wc = subparsers.add_parser('wc')
+    subparser_wc.add_argument('diskstat_major')
+    subparser_wc.add_argument('diskstat_minor')
+    subparser_wc.set_defaults(func=DiskStats.wc)
+
+    subparser_wm = subparsers.add_parser('wm')
+    subparser_wm.add_argument('diskstat_major')
+    subparser_wm.add_argument('diskstat_minor')
+    subparser_wm.set_defaults(func=DiskStats.wm)
+
+    subparser_sw = subparsers.add_parser('sw')
+    subparser_sw.add_argument('diskstat_major')
+    subparser_sw.add_argument('diskstat_minor')
+    subparser_sw.set_defaults(func=DiskStats.sw)
+
+    subparser_tsw = subparsers.add_parser('tsw')
+    subparser_tsw.add_argument('diskstat_major')
+    subparser_tsw.add_argument('diskstat_minor')
+    subparser_tsw.set_defaults(func=DiskStats.tsw)
+
+    subparser_io = subparsers.add_parser('io')
+    subparser_io.add_argument('diskstat_major')
+    subparser_io.add_argument('diskstat_minor')
+    subparser_io.set_defaults(func=DiskStats.io)
+
+    subparser_tsio = subparsers.add_parser('tsio')
+    subparser_tsio.add_argument('diskstat_major')
+    subparser_tsio.add_argument('diskstat_minor')
+    subparser_tsio.set_defaults(func=DiskStats.tsio)
+
+    subparser_wtsio = subparsers.add_parser('wtsio')
+    subparser_wtsio.add_argument('diskstat_major')
+    subparser_wtsio.add_argument('diskstat_minor')
+    subparser_wtsio.set_defaults(func=DiskStats.wtsio)
+
+    return parser.parse_known_args()[0]
 
 
 def main():
